@@ -7,7 +7,8 @@ import sys
 property_value = 470000
 term_loan = 30
 size = 5
-debug = 1
+debug = 0
+plot = 0
 
 class loan:
     def __init__(self, property_value, loan_amount, interest_rate, term_years):
@@ -81,13 +82,13 @@ def calc_single_scenario(d,irl,iri,ti,lvp):
     return bank_loan.monthly_due()+inlaw_loan.monthly_loan_payback()
 
 def run_mega_analysis():
-    
+    global debug
     
     
     #initialization
     discount = np.linspace(0,100000,size)
     interest_rate_loan = np.linspace(.06,0.085,size)
-    interest_rate_inlaw = np.linspace(.01,0.4,size)
+    interest_rate_inlaw = np.linspace(.01,0.04,size)
     term_inlaw = np.linspace(5,20,size)
     loan_value_pct = np.linspace(.5,1,size)
     parameters = {"Discount": [discount,0], "Loan Interest Rate": [interest_rate_loan,1], "In-Law Interest Rate": [interest_rate_inlaw,2], "In-Law Term": [term_inlaw,3], "Bank Loan Percentage": [loan_value_pct,4]}
@@ -104,7 +105,17 @@ def run_mega_analysis():
                         #calc payment
                         payments[i,j,k,l,m] = calc_single_scenario(d,irl,iri,ti,lvp)
                         #os.system("pause")
-    #sys.exit()
+    print(f'min value {payments.min().min().min().min().min()}')
+    location = np.where(payments==payments.min().min().min().min().min())
+    print(int(location[0].item()))
+    debug = 1
+    calc_single_scenario(discount[location[0].item()],
+                         interest_rate_loan[location[1].item()],
+                         interest_rate_inlaw[location[2].item()],
+                         term_inlaw[location[3].item()],
+                         loan_value_pct[location[4].item()])
+    if not plot:
+        return
     #get all pair combinations of the parameters
     all_pairs = list(itertools.combinations(parameters,2))
     
@@ -132,7 +143,7 @@ def run_mega_analysis():
                     #print(slices)
                     
                     #print(payments[slices].reshape(size,size))
-                    ax = make_plot(parameters[pair[0]][0],pair[0],parameters[pair[1]][0],pair[1],payments[slices].reshape(size,size))
+                    ax = make_plot(parameters[pair[0]][0],pair[0],parameters[pair[1]][0],pair[1],np.transpose(payments[slices].reshape(size,size)))
                     constants_list = [x for x in list(parameters.keys()) if x not in pair]
                     #print(constants_list)
                     constants_string = f'{constants_list[0]} = {parameters[constants_list[0]][0][a]}, {constants_list[1]} = {parameters[constants_list[1]][0][b]}, {constants_list[2]} = {parameters[constants_list[2]][0][c]}'
