@@ -7,7 +7,7 @@ import sys
 property_value = 470000
 term_loan = 30
 size = 5
-debug = 0
+debug = 1
 plot = 0
 
 class loan:
@@ -19,11 +19,11 @@ class loan:
         self.term_months = term_years*12
     
     def monthly_property_taxes(self):
-        return (self.property_value*.01)/12
+        return (self.property_value*.0125)/12
     
     def monthly_pmi(self):
         return (self.loan_amount*.01)/12
-        
+    
     def monthly_insurance(self):
         return (self.property_value*.0035)/12
     
@@ -31,12 +31,23 @@ class loan:
         monthly_interest = self.interest_rate/12
         intermediate_step = np.power(1+monthly_interest, self.term_months)
         return self.loan_amount*monthly_interest*intermediate_step/(intermediate_step-1)
-        
+    
     def monthly_due(self):
         return self.monthly_loan_payback()   + \
                self.monthly_pmi()            + \
                self.monthly_property_taxes() + \
                self.monthly_insurance()
+    
+    def show_all(self):
+        print(f'property value {self.property_value}')
+        print(f'loan amt {self.loan_amount}')
+        print(f'int rate {self.interest_rate}')
+        print(f'loan_payback {self.monthly_loan_payback()}')
+        print(f'pmi {self.monthly_pmi()}')
+        print(f'taxes {self.monthly_property_taxes()}')
+        print(f'ins {self.monthly_insurance()}')
+        print(f'total {self.monthly_due()}')
+        print()
 
 def make_plot(x,x_name,y,y_name,z):
     x_, y_ = np.meshgrid(x,y)
@@ -153,4 +164,7 @@ def run_mega_analysis():
                     plt.savefig(f'a\\{constants_string}.png')
 
 if __name__ == "__main__":
-    run_mega_analysis()
+    #run_mega_analysis()
+    val = 300000
+    a = loan(val,val,.085,30)
+    a.show_all()
