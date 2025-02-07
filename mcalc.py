@@ -3,12 +3,13 @@ import matplotlib.pyplot as plt
 import itertools
 import os
 import sys
+import pdb
 #constants
 property_value = 470000
 term_loan = 30
 size = 5
 debug = 1
-plot = 0
+plot = 1
 
 class loan:
     def __init__(self, property_value, loan_amount, interest_rate, term_years):
@@ -39,14 +40,14 @@ class loan:
                self.monthly_insurance()
     
     def show_all(self):
-        print(f'property value {self.property_value}')
-        print(f'loan amt {self.loan_amount}')
-        print(f'int rate {self.interest_rate}')
-        print(f'loan_payback {self.monthly_loan_payback()}')
-        print(f'pmi {self.monthly_pmi()}')
-        print(f'taxes {self.monthly_property_taxes()}')
-        print(f'ins {self.monthly_insurance()}')
-        print(f'total {self.monthly_due()}')
+        print(f'property value {self.property_value:.2f}')
+        print(f'loan amt {self.loan_amount:.2f}')
+        print(f'int rate {self.interest_rate:.2f}')
+        print(f'loan_payback {self.monthly_loan_payback():.2f}')
+        print(f'pmi {self.monthly_pmi():.2f}')
+        print(f'taxes {self.monthly_property_taxes():.2f}')
+        print(f'ins {self.monthly_insurance():.2f}')
+        print(f'total {self.monthly_due():.2f}')
         print()
 
 def make_plot(x,x_name,y,y_name,z):
@@ -75,19 +76,19 @@ def calc_single_scenario(d,irl,iri,ti,lvp):
     inlaw_loan = loan(property_value,inlaw_loan_value,iri,ti)
     
     if debug:
-        print(f'discount {d}')
-        print(f'int loan {irl}')
-        print(f'int inlaw {iri}')
-        print(f'term inlaw {ti}')
-        print(f'loan pct {lvp}')
+        print(f'discount {d:.2f}')
+        print(f'int loan {irl:.2f}')
+        print(f'int inlaw {iri:.2f}')
+        print(f'term inlaw {ti:.2f}')
+        print(f'loan pct {lvp:.2f}')
         print()
-        print(f'bank {bank_loan_value}')
-        print(f'inlaw {inlaw_loan_value}')
-        print(f'total borrowed {bank_loan_value+inlaw_loan_value}')
+        print(f'bank {bank_loan_value:.2f}')
+        print(f'inlaw {inlaw_loan_value:.2f}')
+        print(f'total borrowed {bank_loan_value+inlaw_loan_value:.2f}')
         print()
-        print(f'bank monthly {bank_loan.monthly_due()}')
-        print(f'inlaw monthly {inlaw_loan.monthly_loan_payback()}')
-        print(f'total {bank_loan.monthly_due()+inlaw_loan.monthly_loan_payback()}')
+        print(f'bank monthly {bank_loan.monthly_due():.2f}')
+        print(f'inlaw monthly {inlaw_loan.monthly_loan_payback():.2f}')
+        print(f'total {bank_loan.monthly_due()+inlaw_loan.monthly_loan_payback():.2f}')
         print()
         print()
     return bank_loan.monthly_due()+inlaw_loan.monthly_loan_payback()
@@ -116,7 +117,7 @@ def run_mega_analysis():
                         #calc payment
                         payments[i,j,k,l,m] = calc_single_scenario(d,irl,iri,ti,lvp)
                         #os.system("pause")
-    print(f'min value {payments.min().min().min().min().min()}')
+    print(f'min value {payments.min().min().min().min().min():.2f}')
     location = np.where(payments==payments.min().min().min().min().min())
     print(int(location[0].item()))
     debug = 1
@@ -129,6 +130,7 @@ def run_mega_analysis():
         return
     #get all pair combinations of the parameters
     all_pairs = list(itertools.combinations(parameters,2))
+    if not os.path.exists('results'): os.makedirs('results')
     
     for pair in all_pairs:
         for a in range(size):
@@ -138,19 +140,21 @@ def run_mega_analysis():
                     index_1 = parameters[pair[0]][1]
                     index_2 = parameters[pair[1]][1]
                     
-                    #print(pair)
-                    #print(parameters[pair[0]])
+                    print(pair)
+                    print(parameters[pair[0]])
                     #print(payments[:,:,a,b,c].reshape(size,size))
                     
-                    #print(a,b,c)
+                    print(a,b,c)
                     #figure out what slice
                     slices = [-1,-1,-1,-1,-1]
-                    slices[index_1] = slice(None)
-                    slices[index_2] = slice(None)
+                    slices[index_1] = slice(0,size,1)
+                    slices[index_2] = slice(0,size,1)
                     
                     slices[slices.index(-1)] = a
                     slices[slices.index(-1)] = b
                     slices[slices.index(-1)] = c
+                    slices = tuple(slices)
+                    #pdb.set_trace()
                     #print(slices)
                     
                     #print(payments[slices].reshape(size,size))
@@ -161,10 +165,12 @@ def run_mega_analysis():
                     print(constants_string)
                     ax.set_title(constants_string)
                     #plt.show()
-                    plt.savefig(f'a\\{constants_string}.png')
+                    #pdb.set_trace()
+                    plt.savefig(os.path.join('results',f'{constants_string}.png'))
+                    plt.close()
 
 if __name__ == "__main__":
-    #run_mega_analysis()
+    run_mega_analysis()
     val = 300000
-    a = loan(val,val,.085,30)
+    a = loan(val,val,.05,30)
     a.show_all()
